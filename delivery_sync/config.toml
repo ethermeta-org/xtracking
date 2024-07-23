@@ -1,5 +1,5 @@
 [default]
-source_dsn = "sqlite:///source.db"
+source_dsn = "mssql+pymssql://sn:Empower@67601510@10.1.10.3/SNCX"
 sink_dsn = "sqlite:///sink.db"
 sync_interval = 300
 
