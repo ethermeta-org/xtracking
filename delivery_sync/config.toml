@@ -1,0 +1,18 @@
+[default]
+source_dsn = "sqlite:///source.db"
+sink_dsn = "sqlite:///sink.db"
+sync_interval = 300
+
+[log]
+level = "INFO"
+directory = "./logs"
+
+[prod]
+source_dsn = "postgresql://user:password@localhost/prod_source"
+sink_dsn = "postgresql://user:password@localhost/prod_sink"
+sync_interval = 300
+
+[dev]
+source_dsn = "sqlite:///dev_source.db"
+sink_dsn = "sqlite:///dev_sink.db"
+sync_interval = 60
