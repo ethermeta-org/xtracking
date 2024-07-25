@@ -1,11 +1,15 @@
 import sys
 import os
 from functools import partial
+from http import HTTPStatus
 
-from fastapi import FastAPI
+from fastapi import FastAPI,HTTPException
 from loguru import logger
-from core.adminsite import site
+from starlette.requests import Request
+from starlette.responses import JSONResponse
 
+from core.adminsite import site
+from core.site_settings import site_settings
 from fastapi_amis_admin.admin.settings import Settings
 from fastapi_amis_admin.admin.site import AdminSite
 from utils import get_database_url, create_engine, get_database, is_prod_env, check_is_dev
@@ -16,9 +20,28 @@ from .constants import API_V1_STR
 
 from fastapi_scheduler import SchedulerAdmin
 
+from .interface import XtrackingErrorWebResponse
 from .xiot_api import setup
 
-app = FastAPI(debug=check_is_dev(), docs_url='/admin_docs', redoc_url='/admin_redoc')
+
+
+async def http_exception(request: Request, exc: Exception):
+    msg = str(exc)
+    logger.error(msg)
+    url_path = request.url.path
+    r = XtrackingErrorWebResponse(
+        msg='fail',
+        error=msg,
+        target=url_path
+    )
+    return JSONResponse(content=r.model_dump(), status_code=HTTPStatus.BAD_REQUEST)
+
+
+exception_handlers = {
+    HTTPException: http_exception,
+}
+
+app = FastAPI(debug=check_is_dev(), docs_url='/admin_docs', redoc_url='/admin_redoc',exception_handlers=exception_handlers)
 
 config = '/app/config.yaml'
 
@@ -40,26 +63,18 @@ scheduler = SchedulerAdmin.bind(site)  # scheduler
 setup(app, site)
 
 app.include_router(common_api_router, prefix=API_V1_STR)
-# app.include_router(xiot_api_router, prefix='/xiot/api/v1')  # xiot的api
 
 
 # 数据库连接
 async def database_connect(app: FastAPI, database_url: str) -> None:
     logger.info("Database Connecting!!!")
-    from db.models import DeclarativeBase
-    # engine = create_engine(database_url)
-    #
-    # DeclarativeBase.metadata.create_all(engine)  # 创建模型
-    # database = get_database(database_url)
-    # app.state.db = database  # 加入到状态中
-    # await database.connect()
-    # logger.info("Database Connection Established")
+    engine = create_engine(database_url)
+
+    app.state.db = engine  # 加入到状态中
+    logger.info("Database Connection Established")
 
 
 async def database_disconnect(app: FastAPI):
-    database = app.state.db
-    if database:
-        await database.disconnect()
     logger.info("Database Disconnected")
 
 
@@ -67,14 +82,14 @@ async def add_config(app: FastAPI, setting):
     app.config = setting
 
 
-async def mount_scheduler_site():
+def mount_scheduler_site():
     # Mount the background management system
     site.mount_app(app)
     # Start the scheduled task scheduler
     scheduler.start()
 
 
-database_url = get_database_url(user=config_settings.DATABASE.USER, database=config_settings.DATABASE.NAME,
+database_url = get_database_url(schema='postgresql', user=config_settings.DATABASE.USER, database=config_settings.DATABASE.NAME,
                                 host=config_settings.DATABASE.HOST, port=config_settings.DATABASE.PORT,
                                 password=config_settings.DATABASE.PASSWORD)
 database_onconnect = partial(database_connect, app=app, database_url=database_url)
@@ -83,15 +98,15 @@ database_ondisconnect = partial(database_disconnect, app=app)
 app.add_event_handler('shutdown', database_ondisconnect)
 add_config_on_startup = partial(add_config, app=app, setting=config_settings)
 app.add_event_handler('startup', add_config_on_startup)
-app.add_event_handler('startup', mount_scheduler_site)
+mount_scheduler_site()
 
 
 # 1.配置 CORSMiddleware
-# from starlette.middleware.cors import CORSMiddleware
-# app.add_middleware(
-#     CORSMiddleware,
-#     allow_origins=settings.allow_origins,  # 允许访问的源
-#     allow_credentials=True,  # 支持 cookie
-#     allow_methods=["*"],  # 允许使用的请求方法
-#     allow_headers=["*"]  # 允许携带的 Headers
-# )
+from starlette.middleware.cors import CORSMiddleware
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=site_settings.allow_origins,  # 允许访问的源
+    allow_credentials=True,  # 支持 cookie
+    allow_methods=["*"],  # 允许使用的请求方法
+    allow_headers=["*"]  # 允许携带的 Headers
+)

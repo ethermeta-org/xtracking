@@ -8,13 +8,13 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 
 class Settings(AmisSettings):
-    name: str = 'Xtracking'
+    # name: str = 'Xtracking'
     host: str = '0.0.0.0'
     port: int = 8011
     secret_key: str = ''
     amis_theme: str = 'antd'
-    allow_origins: List[str] = None
-    database_url_async = 'sqlite+aiosqlite:///amisadmin.db'
+    allow_origins: List[str] = ['*']
+    database_url_async: str = 'sqlite+aiosqlite:///amisadmin.db'
     # logger = logger
 
 

@@ -1,9 +1,9 @@
-uvicorn[standard]==0.20.0
-gunicorn==22.0.0
-fastapi[all]==0.88.0
+uvicorn[standard]
+gunicorn
+fastapi[all]
 loguru
 databases[asyncpg]
 psycopg2
 dynaconf
-fastapi_scheduler
+fastapi_scheduler==0.0.15
 aiosqlite
