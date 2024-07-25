@@ -1,0 +1,9 @@
+uvicorn[standard]==0.20.0
+gunicorn==22.0.0
+fastapi[all]==0.88.0
+loguru
+databases[asyncpg]
+psycopg2
+dynaconf
+fastapi_scheduler
+aiosqlite

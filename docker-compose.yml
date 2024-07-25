@@ -1,0 +1,20 @@
+version: "3.2"
+services:
+  xtracking:
+    container_name: xtracking
+    image: ghcr.io/ethermeta-org/xtracking
+    extra_hosts:
+      - host.docker.internal:host-gateway
+    logging:
+      driver: "local"
+      options:
+        max-size: "10m"
+        max-file: "20"
+    ports:
+      - 8011:8011
+    volumes:
+      - ./config.yaml:/app/config.yaml
+    restart: "always"
+    environment:
+      - LOG_LEVEL=info
+      - ENV_RUNTIME_ENV=prod

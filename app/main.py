@@ -1,0 +1,97 @@
+import sys
+import os
+from functools import partial
+
+from fastapi import FastAPI
+from loguru import logger
+from core.adminsite import site
+
+from fastapi_amis_admin.admin.settings import Settings
+from fastapi_amis_admin.admin.site import AdminSite
+from utils import get_database_url, create_engine, get_database, is_prod_env, check_is_dev
+from config import settings as config_settings
+from common_api.api import api_router as common_api_router
+from xiot_api.route import api_router as xiot_api_router
+from .constants import API_V1_STR
+
+from fastapi_scheduler import SchedulerAdmin
+
+from .xiot_api import setup
+
+app = FastAPI(debug=check_is_dev(), docs_url='/admin_docs', redoc_url='/admin_redoc')
+
+config = '/app/config.yaml'
+
+if os.path.exists(config):
+    logger.info(f'从{config}文件读取配置文件')
+    config_settings.load_file(path=config)  # 重新读取配置文件
+else:
+    logger.error(f'{config}配置文件不存在,从默认配置文件: {os.getcwd()}/config.yaml 启动!!!')
+
+if is_prod_env():
+    logger.add(config_settings.logging.path, rotation=config_settings.logging.rotate, level=config_settings.logging.level,
+               encoding='utf-8', enqueue=True)  # 文件日誌
+if check_is_dev():
+    logger.add(sys.stdout, format=config_settings.logging.format, level=config_settings.logging.level)
+
+
+scheduler = SchedulerAdmin.bind(site)  # scheduler
+
+setup(app, site)
+
+app.include_router(common_api_router, prefix=API_V1_STR)
+# app.include_router(xiot_api_router, prefix='/xiot/api/v1')  # xiot的api
+
+
+# 数据库连接
+async def database_connect(app: FastAPI, database_url: str) -> None:
+    logger.info("Database Connecting!!!")
+    from db.models import DeclarativeBase
+    # engine = create_engine(database_url)
+    #
+    # DeclarativeBase.metadata.create_all(engine)  # 创建模型
+    # database = get_database(database_url)
+    # app.state.db = database  # 加入到状态中
+    # await database.connect()
+    # logger.info("Database Connection Established")
+
+
+async def database_disconnect(app: FastAPI):
+    database = app.state.db
+    if database:
+        await database.disconnect()
+    logger.info("Database Disconnected")
+
+
+async def add_config(app: FastAPI, setting):
+    app.config = setting
+
+
+async def mount_scheduler_site():
+    # Mount the background management system
+    site.mount_app(app)
+    # Start the scheduled task scheduler
+    scheduler.start()
+
+
+database_url = get_database_url(user=config_settings.DATABASE.USER, database=config_settings.DATABASE.NAME,
+                                host=config_settings.DATABASE.HOST, port=config_settings.DATABASE.PORT,
+                                password=config_settings.DATABASE.PASSWORD)
+database_onconnect = partial(database_connect, app=app, database_url=database_url)
+app.add_event_handler('startup', database_onconnect)
+database_ondisconnect = partial(database_disconnect, app=app)
+app.add_event_handler('shutdown', database_ondisconnect)
+add_config_on_startup = partial(add_config, app=app, setting=config_settings)
+app.add_event_handler('startup', add_config_on_startup)
+app.add_event_handler('startup', mount_scheduler_site)
+
+
+# 1.配置 CORSMiddleware
+# from starlette.middleware.cors import CORSMiddleware
+# app.add_middleware(
+#     CORSMiddleware,
+#     allow_origins=settings.allow_origins,  # 允许访问的源
+#     allow_credentials=True,  # 支持 cookie
+#     allow_methods=["*"],  # 允许使用的请求方法
+#     allow_headers=["*"]  # 允许携带的 Headers
+# )

@@ -1,0 +1,21 @@
+logging:
+  level: INFO
+  format: "<r>{time}</r>: <lvl>{level}</lvl> <g>{message}</g>"
+  rotate: 1 days
+  path: logs/xtracking.log
+time:
+  zone: 'Asia/Shanghai'
+  datetime_format: '%Y-%m-%d %H:%M:%S'
+  date_format: '%Y-%m-%d'
+
+database:
+  host: 127.0.0.1
+  port: 5432
+  user: odoo
+  password: odoo
+  name: test # 数据库名称
+
+sync:
+  source_dsn: "postgresql+asyncpg://user:password@localhost/prod_source"
+  sink_dsn: "postgresql+asyncpg://user:password@localhost/prod_sink"
+  sync_interval: 300 # 单位秒
