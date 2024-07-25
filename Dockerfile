@@ -3,7 +3,9 @@ FROM tiangolo/uvicorn-gunicorn:python3.11-slim
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
         ca-certificates \
-        gnupg
+        gnupg \
+        libpq-dev \
+        python3-dev
 
 
 # install latest postgresql-client
