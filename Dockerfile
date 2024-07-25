@@ -5,7 +5,8 @@ RUN apt-get update && \
         ca-certificates \
         gnupg \
         libpq-dev \
-        python3-dev
+        python3-dev \
+        build-essential
 
 
 # install latest postgresql-client
