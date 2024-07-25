@@ -1,4 +1,5 @@
 from fastapi_amis_admin import amis, admin
+from sqlalchemy.ext.asyncio import create_async_engine
 
 from .models import SyncLog
 

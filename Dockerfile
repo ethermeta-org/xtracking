@@ -1,5 +1,7 @@
 FROM tiangolo/uvicorn-gunicorn:python3.11-slim
 
+LABEL org.opencontainers.image.source=https://github.com/ethermeta-org/xtracking
+
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
         ca-certificates \

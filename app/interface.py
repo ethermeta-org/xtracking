@@ -10,7 +10,7 @@ class XtrackingBaseResponse(BaseModel):
     data: Any | None = None
 
 
-
-class XtrackingErrorWebResponse(BaseModel):
+class XtrackingErrorWebResponse(XtrackingBaseResponse):
+    code: int = HTTPStatus.BAD_REQUEST
     error: Any | None = None
     target: str = ''

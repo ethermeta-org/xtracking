@@ -5,11 +5,12 @@ from http import HTTPStatus
 
 from fastapi import FastAPI,HTTPException
 from loguru import logger
+from sqlmodel import SQLModel
 from starlette.requests import Request
 from starlette.responses import JSONResponse
 
-from core.adminsite import site
 from core.site_settings import site_settings
+from core.adminsite import site
 from fastapi_amis_admin.admin.settings import Settings
 from fastapi_amis_admin.admin.site import AdminSite
 from utils import get_database_url, create_engine, get_database, is_prod_env, check_is_dev
@@ -22,7 +23,7 @@ from fastapi_scheduler import SchedulerAdmin
 
 from .interface import XtrackingErrorWebResponse
 from .xiot_api import setup
-
+from .xiot_api.models import SyncLog
 
 
 async def http_exception(request: Request, exc: Exception):
@@ -30,7 +31,7 @@ async def http_exception(request: Request, exc: Exception):
     logger.error(msg)
     url_path = request.url.path
     r = XtrackingErrorWebResponse(
-        msg='fail',
+        message='fail',
         error=msg,
         target=url_path
     )
@@ -82,13 +83,17 @@ async def add_config(app: FastAPI, setting):
     app.config = setting
 
 
-def mount_scheduler_site():
-    # Mount the background management system
-    site.mount_app(app)
-    # Start the scheduled task scheduler
-    scheduler.start()
+async def create_admin_db():
+    await site.db.async_run_sync(SQLModel.metadata.create_all, is_session=False)
+    # 运行后台管理系统启动事件
+    await site.router.startup()
 
 
+# Mount the background management system
+site.mount_app(app)
+
+
+app.add_event_handler('startup', create_admin_db)
 database_url = get_database_url(schema='postgresql', user=config_settings.DATABASE.USER, database=config_settings.DATABASE.NAME,
                                 host=config_settings.DATABASE.HOST, port=config_settings.DATABASE.PORT,
                                 password=config_settings.DATABASE.PASSWORD)
@@ -98,8 +103,6 @@ database_ondisconnect = partial(database_disconnect, app=app)
 app.add_event_handler('shutdown', database_ondisconnect)
 add_config_on_startup = partial(add_config, app=app, setting=config_settings)
 app.add_event_handler('startup', add_config_on_startup)
-mount_scheduler_site()
-
 
 # 1.配置 CORSMiddleware
 from starlette.middleware.cors import CORSMiddleware
@@ -110,3 +113,7 @@ app.add_middleware(
     allow_methods=["*"],  # 允许使用的请求方法
     allow_headers=["*"]  # 允许携带的 Headers
 )
+
+
+# Start the scheduled task scheduler
+scheduler.start()

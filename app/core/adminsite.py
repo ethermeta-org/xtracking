@@ -1,11 +1,20 @@
 from fastapi_amis_admin.amis import PageSchema
+from sqlalchemy_database import AsyncDatabase, Database
 
 from .site_settings import site_settings
 
 from fastapi_amis_admin import admin
 from fastapi_amis_admin.admin import AdminSite
 
-site = AdminSite(site_settings)
+
+async_db = AsyncDatabase.create(
+    site_settings.database_url_async,
+    echo=site_settings.debug,
+    session_options={"expire_on_commit": False},
+)
+
+
+site = AdminSite(settings=site_settings, engine=async_db)
 
 
 @site.register_admin
