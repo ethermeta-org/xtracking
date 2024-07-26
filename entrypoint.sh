@@ -9,3 +9,5 @@ else
   echo "copy /opt/config.yaml /app/"
 fi
 
+exec /start.sh
+
