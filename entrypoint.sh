@@ -2,11 +2,11 @@
 
 trap stop SIGINT SIGTERM
 
-if [ -e "/app/config.yaml" ]; then
-  echo "/app/config.yaml already exists."
+if [ -e "/opt/xtrack/config.yaml" ]; then
+  echo "/opt/xtrack/config.yaml already exists."
 else
-  cp /opt/config.yaml /app/
-  echo "copy /opt/config.yaml /app/"
+  cp /opt/config.yaml /opt/xtrack/
+  echo "copy /opt/config.yaml /opt/xtrack/"
 fi
 
 exec /start.sh

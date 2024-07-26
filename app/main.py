@@ -38,7 +38,7 @@ exception_handlers = {
 
 app = FastAPI(debug=check_is_dev(), docs_url='/admin_docs', redoc_url='/admin_redoc',exception_handlers=exception_handlers)
 
-config = '/app/config.yaml'
+config = os.getenv('ENV_CONFIG_FILE', '/opt/xtrack/config.yaml')
 
 if os.path.exists(config):
     logger.info(f'从{config}文件读取配置文件')
