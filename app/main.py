@@ -11,20 +11,15 @@ from starlette.responses import JSONResponse
 
 from core.site_settings import site_settings
 from core.adminsite import site
-from fastapi_amis_admin.admin.settings import Settings
-from fastapi_amis_admin.admin.site import AdminSite
 from utils import get_database_url, create_engine, get_database, is_prod_env, check_is_dev
 from config import settings as config_settings
 from common_api.api import api_router as common_api_router
-from xiot_api.route import api_router as xiot_api_router
 from .constants import API_V1_STR
 
 from fastapi_scheduler import SchedulerAdmin
 
 from .interface import XtrackingErrorWebResponse
 from .xiot_api import setup
-from .xiot_api.models import SyncLog
-
 
 async def http_exception(request: Request, exc: Exception):
     msg = str(exc)

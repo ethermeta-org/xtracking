@@ -1,5 +1,7 @@
 FROM tiangolo/uvicorn-gunicorn:python3.11-slim
 
+WORKDIR /app/
+
 LABEL org.opencontainers.image.source=https://github.com/ethermeta-org/xtracking
 
 RUN apt-get update && \
@@ -34,7 +36,7 @@ COPY ./app/config.yaml /opt/config.yaml
 
 COPY ./entrypoint.sh /entrypoint.sh
 
-COPY ./app /app
+COPY ./app /app/app
 
 EXPOSE 8011
 

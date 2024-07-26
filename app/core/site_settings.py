@@ -1,7 +1,6 @@
 import os
 from pathlib import Path
 from typing import List
-from loguru import logger
 from fastapi_amis_admin.admin.settings import Settings as AmisSettings
 
 from app.utils import check_is_dev
