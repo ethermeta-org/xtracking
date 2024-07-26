@@ -61,11 +61,15 @@ app.include_router(common_api_router, prefix=API_V1_STR)
 
 
 # 数据库连接
-async def database_connect(app: FastAPI, database_url: str) -> None:
+async def database_connect(app: FastAPI, database_url: str, attr: str = 'db') -> None:
     logger.info("Database Connecting!!!")
-    engine = create_engine(database_url)
+    try:
+        engine = create_engine(database_url)
 
-    app.state.db = engine  # 加入到状态中
+        setattr(app.state, attr, engine)   # 加入到状态中
+
+    except Exception as e:
+        logger.error(f"Database Connect Error: {e}")
     logger.info("Database Connection Established")
 
 

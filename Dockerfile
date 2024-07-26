@@ -9,6 +9,7 @@ RUN apt-get update && \
         ca-certificates \
         gnupg \
         libpq-dev \
+        libpq5 \
         python3-dev \
         build-essential
 

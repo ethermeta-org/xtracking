@@ -1,3 +1,4 @@
+import json
 import re
 from http import HTTPStatus
 
@@ -60,7 +61,9 @@ async def create_retraspects(item: schema.RetraspectsCreate = Body(
         return Response(status_code=HTTPStatus.BAD_REQUEST, content=d.model_dump_json())
 
     try:
-        db = request.app.state.db  # 获取默认engine
+        db = getattr(request.app.state, "db", None)   # 获取默认engine
+        if not db:
+            return Response(status_code=HTTPStatus.BAD_REQUEST, content=json.dumps({"msg": "DB not set"}))
         with Session(db) as session:
             # 三码同时重复的存在
             existed_record = crud_existed_records(session, item)
