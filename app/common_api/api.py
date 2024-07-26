@@ -1,6 +1,6 @@
 from fastapi import APIRouter
 
-from .endpoints.healthz import router as common_router
+from app.common_api.endpoints.healthz import router as common_router
 
 api_router = APIRouter()
 

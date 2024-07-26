@@ -1,25 +1,24 @@
-import sys
 import os
+import sys
 from functools import partial
 from http import HTTPStatus
 
-from fastapi import FastAPI,HTTPException
+from fastapi import FastAPI, HTTPException
+from fastapi_scheduler import SchedulerAdmin
 from loguru import logger
 from sqlmodel import SQLModel
 from starlette.requests import Request
 from starlette.responses import JSONResponse
 
-from core.site_settings import site_settings
-from core.adminsite import site
-from utils import get_database_url, create_engine, get_database, is_prod_env, check_is_dev
-from config import settings as config_settings
-from common_api.api import api_router as common_api_router
-from .constants import API_V1_STR
+from app.common_api.api import api_router as common_api_router
+from app.config import settings as config_settings
+from app.constants import API_V1_STR
+from app.core.adminsite import site
+from app.core.site_settings import site_settings
+from app.interface import XtrackingErrorWebResponse
+from app.utils import get_database_url, create_engine, is_prod_env, check_is_dev
+from app.xiot_api import setup
 
-from fastapi_scheduler import SchedulerAdmin
-
-from .interface import XtrackingErrorWebResponse
-from .xiot_api import setup
 
 async def http_exception(request: Request, exc: Exception):
     msg = str(exc)

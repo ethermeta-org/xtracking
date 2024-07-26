@@ -1,9 +1,6 @@
-from typing import List
-
 import sqlalchemy
-from loguru import logger
-from sqlmodel import Field, Session, select, or_
-from app.db import models
+from sqlmodel import Session, select, or_
+
 from app.xiot_api import schema
 
 

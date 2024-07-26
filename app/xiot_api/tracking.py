@@ -1,10 +1,10 @@
+import re
 from http import HTTPStatus
-from typing import Annotated
+
 from fastapi import APIRouter, Body, Request, Response
-from fastapi.responses import JSONResponse
 from loguru import logger
 from sqlmodel import Session
-import re
+
 from app import interface
 from app.exception import OnesphereException
 from app.xiot_api import schema

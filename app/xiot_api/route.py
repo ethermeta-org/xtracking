@@ -1,6 +1,6 @@
 from fastapi import APIRouter
 
-from .tracking import router as tracking_router
+from app.xiot_api.tracking import router as tracking_router
 
 api_router = APIRouter()
 

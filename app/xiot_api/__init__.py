@@ -1,5 +1,5 @@
 #
-from fastapi import FastAPI, APIRouter
+from fastapi import FastAPI
 from fastapi_amis_admin.admin import AdminApp
 
 

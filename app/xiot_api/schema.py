@@ -1,6 +1,6 @@
 import datetime
 
-from sqlmodel import Field, SQLModel, create_engine
+from sqlmodel import Field, SQLModel
 
 
 class RetraspectsCreate(SQLModel):

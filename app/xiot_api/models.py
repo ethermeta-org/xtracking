@@ -4,7 +4,8 @@ from typing import Optional
 import pytz
 import sqlmodel
 from fastapi_amis_admin import amis
-from fastapi_amis_admin.models import Field, IntegerChoices, TextChoices
+from fastapi_amis_admin.models import Field, TextChoices
+
 from app.constants import ENV_DEFAULT_TIMEZONE
 
 DEFAULT_TZ = pytz.timezone(ENV_DEFAULT_TIMEZONE)
