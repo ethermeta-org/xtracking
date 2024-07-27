@@ -51,5 +51,6 @@ async def cron_task_sync_delivery_records_mssql_to_pg():
             for delivery_record in records:
                 logger.debug(f"开始同步发货信息: {delivery_record.model_dump_json(indent=4)}")
                 logger.info(f"开始同步发货信息, FNUMBER序列号: {delivery_record.FNUMBER}")
+                #TODO: 编写同步业务逻辑
 
 
