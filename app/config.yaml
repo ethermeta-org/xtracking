@@ -9,6 +9,7 @@ time:
   datetime_format: '%Y-%m-%d %H:%M:%S'
   date_format: '%Y-%m-%d'
 
+# API接口主要使用的数据库,目前为xiot PG数据库
 database:
   host: 127.0.0.1
   port: 5432
