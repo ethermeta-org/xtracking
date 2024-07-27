@@ -38,21 +38,13 @@ exception_handlers = {
 app = FastAPI(debug=check_is_dev(), docs_url='/admin_docs', redoc_url='/admin_redoc',
               exception_handlers=exception_handlers)
 
-config = os.getenv('ENV_CONFIG_FILE', '/opt/xtrack/config.yaml')
-
-if os.path.exists(config):
-    logger.info(f'从{config}文件读取配置文件')
-    config_settings.load_file(path=config)  # 重新读取配置文件
-else:
-    logger.error(f'{config}配置文件不存在,从默认配置文件: {os.getcwd()}/config.yaml 启动!!!')
-
 if is_prod_env():
     logger.add(config_settings.logging.path, rotation=config_settings.logging.rotate,
                level=config_settings.logging.level,
                retention=getattr(config_settings.logging, 'retention', '15 days'),
                encoding='utf-8', enqueue=True)  # 文件日誌
 if check_is_dev():
-    logger.add(sys.stdout, format=config_settings.logging.format, level=config_settings.logging.level)
+    logger.add(sys.stdout, format=config_settings.logging.format, level="DEBUG")
 
 
 setup(app, site)

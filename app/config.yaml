@@ -17,6 +17,12 @@ database:
   name: test # 数据库名称
 
 sync:
-  source_dsn: "postgresql+asyncpg://user:password@localhost/prod_source"
-  sink_dsn: "postgresql+asyncpg://user:password@localhost/prod_sink"
-  sync_interval: 300 # 单位秒
+#  source_dsn: "postgresql://odoo:odoo@localhost/test"
+  source:
+    host: 10.1.10.3
+    port: 1433
+    database: sndb
+    username: sn
+    password: Empower@67601510
+  sink_dsn: "postgresql://odoo:odoo@localhost/test"
+  sync_interval: 5 # 单位分钟

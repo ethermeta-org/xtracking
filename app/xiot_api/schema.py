@@ -17,8 +17,8 @@ class Retraspects(RetraspectsCreate, table=True):
 
     product_code: str = Field(index=True, default='TBD')
     product_name: str = Field(title='产品名称', default='TBD')
-    delivery_time: datetime.datetime = Field(default_factory=datetime.datetime.utcnow)
-    customer_code: str = Field(index=True)
-    customer_name: str | None = Field(default=None, title='供应商名称')
+    delivery_time: datetime.datetime = Field(default_factory=datetime.datetime.utcnow, title='发货时间')
+    customer_code: str = Field(index=True, title='客户代码')
+    customer_name: str | None = Field(default=None, title='客户名称')
 
 

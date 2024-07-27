@@ -1,7 +1,7 @@
 #
 from fastapi import FastAPI
 from fastapi_amis_admin.admin import AdminApp
-
+from . import job #加载周期执行任务
 
 def setup(app: FastAPI, admin_app: AdminApp, **kwargs):
     # 导入相关模块
