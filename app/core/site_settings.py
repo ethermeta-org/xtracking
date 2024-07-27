@@ -6,19 +6,21 @@ from fastapi_amis_admin.admin.settings import Settings as AmisSettings
 
 from app.utils import check_is_dev
 
-BASE_DIR = Path(__file__).resolve().parent.parent
+BASE_DIR = os.getcwd()
 
 
 class Settings(AmisSettings):
-    # name: str = 'Xtracking'
+    site_title: str = 'Xtracking'
     host: str = '0.0.0.0'
     debug: bool = check_is_dev()
     port: int = 8011
     secret_key: str = ''
     amis_theme: str = 'antd'
     allow_origins: List[str] = ['*']
-    database_url_async: str = 'sqlite+aiosqlite:///xtracking.db'
     # logger = logger
 
 
-site_settings = Settings(_env_file=os.path.join(BASE_DIR, '.env'))
+site_settings = Settings(database_url_async='sqlite+aiosqlite:///data/database/xtracking.db?check_same_thread=False')
+
+if not os.path.exists(os.path.join(BASE_DIR, 'data', 'database')):
+    os.makedirs(os.path.join(BASE_DIR, 'data', 'database'), exist_ok=True)

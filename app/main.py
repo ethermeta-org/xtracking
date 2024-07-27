@@ -4,7 +4,6 @@ from functools import partial
 from http import HTTPStatus
 
 from fastapi import FastAPI, HTTPException
-from fastapi_scheduler import SchedulerAdmin
 from loguru import logger
 from sqlmodel import SQLModel
 from starlette.requests import Request
@@ -13,7 +12,7 @@ from starlette.responses import JSONResponse
 from app.common_api.api import api_router as common_api_router
 from app.config import settings as config_settings
 from app.constants import API_V1_STR
-from app.core.adminsite import site
+from app.core.adminsite import site, scheduler
 from app.core.site_settings import site_settings
 from app.interface import XtrackingErrorWebResponse
 from app.utils import get_database_url, create_engine, is_prod_env, check_is_dev
@@ -36,7 +35,8 @@ exception_handlers = {
     HTTPException: http_exception,
 }
 
-app = FastAPI(debug=check_is_dev(), docs_url='/admin_docs', redoc_url='/admin_redoc',exception_handlers=exception_handlers)
+app = FastAPI(debug=check_is_dev(), docs_url='/admin_docs', redoc_url='/admin_redoc',
+              exception_handlers=exception_handlers)
 
 config = os.getenv('ENV_CONFIG_FILE', '/opt/xtrack/config.yaml')
 
@@ -47,13 +47,13 @@ else:
     logger.error(f'{config}配置文件不存在,从默认配置文件: {os.getcwd()}/config.yaml 启动!!!')
 
 if is_prod_env():
-    logger.add(config_settings.logging.path, rotation=config_settings.logging.rotate, level=config_settings.logging.level,
+    logger.add(config_settings.logging.path, rotation=config_settings.logging.rotate,
+               level=config_settings.logging.level,
+               retention=getattr(config_settings.logging, 'retention', '15 days'),
                encoding='utf-8', enqueue=True)  # 文件日誌
 if check_is_dev():
     logger.add(sys.stdout, format=config_settings.logging.format, level=config_settings.logging.level)
 
-
-scheduler = SchedulerAdmin.bind(site)  # scheduler
 
 setup(app, site)
 

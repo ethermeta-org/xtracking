@@ -18,3 +18,4 @@ services:
     environment:
       - LOG_LEVEL=info
       - ENV_RUNTIME_ENV=prod
+      - ENV_CONFIG_FILE=/opt/config.yaml

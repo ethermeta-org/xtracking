@@ -39,6 +39,8 @@ COPY ./entrypoint.sh /entrypoint.sh
 
 COPY ./app /app/app
 
+RUN mkdir -p /app/data /app/app/data
+
 EXPOSE 8011
 
 ENTRYPOINT ["/entrypoint.sh"]

@@ -2,7 +2,8 @@ logging:
   level: INFO
   format: "<r>{time}</r>: <lvl>{level}</lvl> <g>{message}</g>"
   rotate: 1 days
-  path: logs/xtracking.log
+  retention: 15 days
+  path: data/logs/xtracking.log
 time:
   zone: 'Asia/Shanghai'
   datetime_format: '%Y-%m-%d %H:%M:%S'
