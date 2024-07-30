@@ -9,7 +9,7 @@ from app.core.adminsite import scheduler, async_db, source_db, sink_db
 from loguru import logger
 from sqlalchemy import insert, select, update, delete
 from dateutil.relativedelta import relativedelta
-from app.xiot_api.models import SyncLog, MSDelivery, DataTracking
+from app.xiot_api.models import SyncLog, MSDelivery
 from app.config import settings
 from app.xiot_api.schema import Retraspects
 
@@ -36,8 +36,8 @@ async def cron_task_delete_hist_sync_log():
         logger.info(f'删除历史同步日志任务完成。删除日志数量: {r}')
 
 
-@scheduler.scheduled_job('interval', seconds=5)
-# @scheduler.scheduled_job('interval', minutes=sync_interval)
+#@scheduler.scheduled_job('interval', seconds=5)
+@scheduler.scheduled_job('interval', minutes=sync_interval)
 async def cron_task_sync_delivery_records_mssql_to_pg():
     logger.info(f'[EMPOWER]开始同步生产物流信息')
 
