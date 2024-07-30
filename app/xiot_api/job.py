@@ -63,11 +63,11 @@ async def cron_task_sync_delivery_records_mssql_to_pg():
                     continue
                 logger.debug(f"找到已存在的对应记录: {r.model_dump_json(indent=4)}")
                 v = {
-                    "customer_name": delivery_record.culFNAME,
-                    "delivery_time": delivery_record.FSALEDATE,  # 出库日期就是销售日期
-                    "customer_code": "",  #FIXME: 目前中间表里没有这个字段,
-                    "product_code": delivery_record.mFNUMBER,
-                    "product_name": ""  #FIXME: 目前中间表里没有这个字段,
+                    "customer_name": delivery_record.culFNAME or "",
+                    "delivery_time": delivery_record.FSALEDATE or "",  # 出库日期就是销售日期
+                    "customer_code": delivery_record.cuFNUMBER or "",
+                    "product_code": delivery_record.mFNUMBER or "",
+                    "product_name": delivery_record.mlFNAME or ""
                 }
                 logger.debug(f"cron_task_sync_delivery_records_mssql_to_pg, 更新数据内容,: {pprint.pformat(v)}")
                 update_stmt = update(Retraspects).where(Retraspects.id == r.id).values(**v)  # 通过主键快速定位优化
