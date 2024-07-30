@@ -8,6 +8,7 @@ RUN apt-get update && \
     apt-get install -y --no-install-recommends \
         ca-certificates \
         gnupg \
+        curl \
         libpq-dev \
         libpq5 \
         python3-dev \
