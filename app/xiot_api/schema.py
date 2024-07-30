@@ -12,6 +12,7 @@ class RetraspectsCreate(SQLModel):
 
 class Retraspects(RetraspectsCreate, table=True):
     __tablename__ = 'data_tracking'
+    __table_args__ = {'extend_existing': True}
 
     id: int | None = Field(default=None, primary_key=True)
 

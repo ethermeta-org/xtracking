@@ -9,7 +9,7 @@ from app.core.adminsite import scheduler, async_db, source_db, sink_db
 from loguru import logger
 from sqlalchemy import insert, select, update, delete
 from dateutil.relativedelta import relativedelta
-from app.xiot_api.models import SyncLog, MSDelivery
+from app.xiot_api.models import SyncLog, MSDelivery, DataTracking
 from app.config import settings
 from app.xiot_api.schema import Retraspects
 
@@ -51,6 +51,20 @@ async def cron_task_sync_delivery_records_mssql_to_pg():
             for delivery_record in records:
                 logger.debug(f"开始同步发货信息: {delivery_record.model_dump_json(indent=4)}")
                 logger.info(f"开始同步发货信息, FNUMBER序列号: {delivery_record.FNUMBER}")
-                #TODO: 编写同步业务逻辑
 
+                match_sn_stmt = select(Retraspects).where(Retraspects.jq_sn == delivery_record.FNUMBER)
+                d = await sink_db.async_execute(match_sn_stmt)
+                r: Retraspects = d.first()
+                if not r:
+                    logger.info(f"没有找到对应的记录")
+                else:
+                    logger.info(f"对应记录: {r}")
+                    update_stmt = update(Retraspects).where(Retraspects.jq_sn == delivery_record.FNUMBER).values(customer_name=delivery_record.culFNAME)
+                    await sink_db.async_execute(update_stmt)
+                    logger.info("更新customer name完成")
+
+                    update_flag_stmt = update(MSDelivery).where(MSDelivery.ID == delivery_record.ID).values(FLAG=1)
+                    await source_db.async_execute(update_flag_stmt)
+                    logger.info("更新source flag标记完成")
+                logger.info("同步完成")
 
