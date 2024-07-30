@@ -8,6 +8,7 @@ class RetraspectsCreate(SQLModel):
     vendor_sn: str = Field(title='供应商序列号')
     system_code: str = Field(title='系统代码')
     controller_code: str = Field(title='控制器代码')
+    operator: str = Field(title="操作工")
 
 
 class Retraspects(RetraspectsCreate, table=True):

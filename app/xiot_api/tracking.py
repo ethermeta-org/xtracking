@@ -19,18 +19,21 @@ router = APIRouter()
 async def create_retraspects(item: schema.RetraspectsCreate = Body(
     examples=[
         {
+            "operator": "张三",
             "jq_sn": "1005737",
             "vendor_sn": "JQ240123034",
             "system_code": "000184-70EEEE-EZ01",
             "controller_code": "ks77h2eggmc0x9t0k36bqnsts6tb2y1268p3r4kngcn3mw4mzaxpd6y5c8qu6hws62wx6w0c8nf akzxz9ap2g37tb43x10q722ko2k0L6Iaavp/aUg+BN/xn0iqRW+ 2rHDR+b77x0ra3BSxMsQBUx1Ug3VN4]CPypeUdf2VBkjqrTZk=yk06ovxovunk4s3lwqunux1cd 7zv9kj7kztobgcm0qm58p6kg08qd927g22522c2hlrscieszhx86ismzgdd5vk1d26f4yy2kpuc",
         },
         {
+            "operator": "张三",
             "jq_sn": "100573711",
             "vendor_sn": "JQ240123034",
             "system_code": "000184-70EEEE-EZ01",
             "controller_code": "ks77h2eggmc0x9t0k36bqnsts6tb2y1268p3r4kngcn3mw4mzaxpd6y5c8qu6hws62wx6w0c8nf akzxz9ap2g37tb43x10q722ko2k0L6Iaavp/aUg+BN/xn0iqRW+ 2rHDR+b77x0ra3BSxMsQBUx1Ug3VN4]CPypeUdf2VBkjqrTZk=yk06ovxovunk4s3lwqunux1cd 7zv9kj7kztobgcm0qm58p6kg08qd927g22522c2hlrscieszhx86ismzgdd5vk1d26f4yy2kpuc",
         },
         {
+            "operator": "张三",
             "jq_sn": "1005737",
             "vendor_sn": "JQ24012303422",
             "system_code": "000184-70EEEE-EZ01",
