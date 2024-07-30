@@ -52,19 +52,29 @@ async def cron_task_sync_delivery_records_mssql_to_pg():
                 logger.debug(f"开始同步发货信息: {delivery_record.model_dump_json(indent=4)}")
                 logger.info(f"开始同步发货信息, FNUMBER序列号: {delivery_record.FNUMBER}")
 
-                match_sn_stmt = select(Retraspects).where(Retraspects.jq_sn == delivery_record.FNUMBER)
+                dn = delivery_record.FNUMBER
+                if not dn:
+                    continue
+                match_sn_stmt = select(Retraspects).where(Retraspects.jq_sn == dn).limit(1)
                 d = await sink_db.async_execute(match_sn_stmt)
-                r: Retraspects = d.first()
+                r: Retraspects = d.one_or_none()
                 if not r:
-                    logger.info(f"没有找到对应的记录")
-                else:
-                    logger.info(f"对应记录: {r}")
-                    update_stmt = update(Retraspects).where(Retraspects.jq_sn == delivery_record.FNUMBER).values(customer_name=delivery_record.culFNAME)
-                    await sink_db.async_execute(update_stmt)
-                    logger.info("更新customer name完成")
+                    logger.error(f"没有找到对应的记录, 发货FNUMBER序列号: {dn}")
+                    continue
+                logger.debug(f"找到已存在的对应记录: {r.model_dump_json(indent=4)}")
+                v = {
+                    "customer_name": delivery_record.culFNAME,
+                    "delivery_time": delivery_record.FSALEDATE,  # 出库日期就是销售日期
+                    "customer_code": "",  #FIXME: 目前中间表里没有这个字段,
+                    "product_code": delivery_record.mFNUMBER,
+                    "product_name": ""  #FIXME: 目前中间表里没有这个字段,
+                }
+                logger.debug(f"cron_task_sync_delivery_records_mssql_to_pg, 更新数据内容,: {pprint.pformat(v)}")
+                update_stmt = update(Retraspects).where(Retraspects.id == r.id).values(**v)  # 通过主键快速定位优化
+                await sink_db.async_execute(update_stmt)
+                logger.info(f"更新发货FNUMBER序列号: {dn}完成")
 
-                    update_flag_stmt = update(MSDelivery).where(MSDelivery.ID == delivery_record.ID).values(FLAG=1)
-                    await source_db.async_execute(update_flag_stmt)
-                    logger.info("更新source flag标记完成")
-                logger.info("同步完成")
-
+                update_flag_stmt = update(MSDelivery).where(MSDelivery.ID == delivery_record.ID).values(FLAG=1)
+                await source_db.async_execute(update_flag_stmt)
+                logger.info("更新source flag标记完成")
+        logger.info("同步完成")
