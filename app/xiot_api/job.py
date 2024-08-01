@@ -36,7 +36,7 @@ async def cron_task_delete_hist_sync_log():
         logger.info(f'删除历史同步日志任务完成。删除日志数量: {r}')
 
 
-#@scheduler.scheduled_job('interval', seconds=5)
+# @scheduler.scheduled_job('interval', seconds=5)
 @scheduler.scheduled_job('interval', minutes=sync_interval)
 async def cron_task_sync_delivery_records_mssql_to_pg():
     logger.info(f'[EMPOWER]开始同步生产物流信息')
@@ -61,7 +61,7 @@ async def cron_task_sync_delivery_records_mssql_to_pg():
                 if not r:
                     logger.error(f"没有找到对应的记录, 发货FNUMBER序列号: {dn}")
                     continue
-                logger.debug(f"找到已存在的对应记录: {r.model_dump_json(indent=4)}")
+                logger.debug(f"找到已存在的对应记录: {r}")
                 v = {
                     "customer_name": delivery_record.culFNAME or "",
                     "delivery_time": delivery_record.FSALEDATE or "",  # 出库日期就是销售日期
@@ -70,7 +70,7 @@ async def cron_task_sync_delivery_records_mssql_to_pg():
                     "product_name": delivery_record.mlFNAME or ""
                 }
                 logger.debug(f"cron_task_sync_delivery_records_mssql_to_pg, 更新数据内容,: {pprint.pformat(v)}")
-                update_stmt = update(Retraspects).where(Retraspects.id == r.id).values(**v)  # 通过主键快速定位优化
+                update_stmt = update(Retraspects).where(Retraspects.jq_sn == delivery_record.FNUMBER).values(**v)  # 通过主键快速定位优化
                 await sink_db.async_execute(update_stmt)
                 logger.info(f"更新发货FNUMBER序列号: {dn}完成")
 
