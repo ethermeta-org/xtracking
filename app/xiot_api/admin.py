@@ -8,4 +8,4 @@ class LogsAdmin(admin.ModelAdmin):
     page_schema = amis.PageSchema(label='同步日志', icon='fa fa-folder')
     router_prefix = '/logs'
     model = SyncLog
-    search_fields = [SyncLog.name]
+    search_fields = [SyncLog.sn, SyncLog.description]

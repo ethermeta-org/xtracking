@@ -1,3 +1,4 @@
+import uuid
 from datetime import datetime
 from typing import Optional
 
@@ -26,10 +27,13 @@ class BaseSQLModel(sqlmodel.SQLModel):
 
 class SyncLog(BaseSQLModel, table=True):
     __tablename__ = 'sync_log'
-    name: str = Field(
-        title='名称',
-        sa_column=sqlmodel.Column(sqlmodel.String(100), unique=True, index=True, nullable=False)
-    )
+    uuid: str = Field(default_factory=lambda: str(uuid.uuid4()),
+                      unique=True, index=True, nullable=False, title='UUID')
+    sn: str = Field(default="", title='Serial Number', nullable=True)
+    # name: str = Field(
+    #     title='名称',
+    #     sa_column=sqlmodel.Column(sqlmodel.String(100), unique=True, index=True, nullable=False)
+    # )
     description: str = Field(default='', title='描述', amis_form_item=amis.Textarea())
     execute_datatime: datetime = Field(default_factory=datetime.now, title='执行时间')
     state: SyncLogState = Field(default=SyncLogState.ready, title='状态')
