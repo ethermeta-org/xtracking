@@ -36,7 +36,6 @@ async def cron_task_delete_hist_sync_log():
         logger.info(f'删除历史同步日志任务完成。删除日志数量: {r}')
 
 
-
 @scheduler.scheduled_job('interval', seconds=5)
 # @scheduler.scheduled_job('interval', minutes=sync_interval)
 async def cron_task_sync_delivery_records_mssql_to_pg():
@@ -57,19 +56,18 @@ async def cron_task_sync_delivery_records_mssql_to_pg():
                     dn = delivery_record.FNUMBER
                     start_time = datetime.now()
                     log = SyncLog(
-                            sn=dn,
-                            description=f'同步发货信息,该记录id为{delivery_record.ID}。',
-                            execute_datatime=start_time,
-                            state=SyncLogState.ready,# 待执行
-                        )
-
+                        sn=dn,
+                        description=f'同步发货信息,该记录id为{delivery_record.ID}。',
+                        execute_datatime=start_time,
+                        state=SyncLogState.ready,  # 待执行
+                    )
 
                     # 1. 检查序列号是否为空, 若为空则失败
                     if not dn:
                         log.state = SyncLogState.fail
                         log.description += f" 序列号为空"
                         log.duration = (datetime.now() - start_time).total_seconds()
-                        insert_stmt = insert(SyncLog).values(log.dict())
+                        insert_stmt = insert(SyncLog).values(log.model_dump())
                         await async_db.async_execute(insert_stmt)
                         continue
 
@@ -85,7 +83,7 @@ async def cron_task_sync_delivery_records_mssql_to_pg():
                         log.description = f"没有找到该序列号对应的记录: {dn}"
                         log.duration = (datetime.now() - start_time).total_seconds()
                         logger.debug(f"log updated to {log}")
-                        insert_stmt = insert(SyncLog).values(log.dict())
+                        insert_stmt = insert(SyncLog).values(log.model_dump())
                         await async_db.async_execute(insert_stmt)
                         continue
 
@@ -100,7 +98,8 @@ async def cron_task_sync_delivery_records_mssql_to_pg():
                         "product_name": delivery_record.mlFNAME or ""
                     }
                     logger.debug(f"cron_task_sync_delivery_records_mssql_to_pg, 更新数据内容,: {pprint.pformat(v)}")
-                    update_stmt = update(Retraspects).where(Retraspects.jq_sn == delivery_record.FNUMBER).values(**v)  # 通过主键快速定位优化
+                    update_stmt = update(Retraspects).where(Retraspects.jq_sn == delivery_record.FNUMBER).values(
+                        **v)  # 通过主键快速定位优化
                     await sink_db.async_execute(update_stmt)
 
                     log.state = SyncLogState.success
@@ -111,7 +110,7 @@ async def cron_task_sync_delivery_records_mssql_to_pg():
                     logger.info("更新source flag标记完成")
 
                     log.duration = (datetime.now() - start_time).total_seconds()
-                    insert_stmt = insert(SyncLog).values(log.dict())
+                    insert_stmt = insert(SyncLog).values(log.model_dump())
                     await async_db.async_execute(insert_stmt)
                     logger.info(f"记录同步日志完成,FNUMBER序列号: {delivery_record.FNUMBER}")
 
