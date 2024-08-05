@@ -2,7 +2,7 @@ version: "3.2"
 services:
   xtracking:
     container_name: xtracking
-    image: ghcr.io/ethermeta-org/xtracking
+    image: ghcr.io/ethermeta-org/xtracking:2024-08-02
     extra_hosts:
       - host.docker.internal:host-gateway
     logging:
@@ -12,8 +12,8 @@ services:
         max-file: "20"
     ports:
       - 8011:8011
-    volumes:
-      - ./config.yaml:/opt/xtrack/config.yaml
+    # volumes:
+    #   - ./config.yaml:/opt/xtrack/config.yaml
     restart: "always"
     environment:
       - LOG_LEVEL=info
