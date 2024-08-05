@@ -9,5 +9,6 @@ else
   echo "copy /opt/config.yaml /opt/xtrack/"
 fi
 
-exec /start.sh
+#exec /start.sh
+exec uvicorn --reload --host "0.0.0.0" --port "8011" "app.main:app"
 
