@@ -1,6 +1,7 @@
 import sqlalchemy
+from sqlalchemy.exc import MultipleResultsFound
 from sqlmodel import Session, select, or_
-
+from loguru import logger
 from app.xiot_api import schema
 
 
@@ -29,7 +30,11 @@ def crud_conflict_records_existed(db: Session, item: schema.RetraspectsCreate) -
                                                      schema.Retraspects.system_code == item.system_code,
                                                      schema.Retraspects.controller_code == item.controller_code,
                                                      ))
-    result = db.exec(statement).one_or_none()
+    try:
+        result = db.exec(statement).one_or_none()
+    except MultipleResultsFound as e:
+        logger.error(f"crud_conflict_records_existed, {e}")
+        result = db.exec(statement).first()
     return result
 
 
