@@ -36,6 +36,16 @@ async def get_tracking_records(code: str = Query(openapi_examples={"normal": {
             return Response(status_code=HTTPStatus.BAD_REQUEST, content=json.dumps({"msg": "DB not set"}))
         with Session(db) as session:
             existed_record, err_msg = crud_fetch_record_via_code(session, code)
+            if not existed_record:
+                msg = f"未找到相应的记录: {code}"
+                response = {
+                    "code": HTTPStatus.BAD_REQUEST,
+                    "message": msg,
+                    "data": {
+                        "msg": msg
+                    },
+                }
+                return Response(status_code=HTTPStatus.BAD_REQUEST, content=json.dumps(response))
             if err_msg:
                 response = {
                     "code": HTTPStatus.CONFLICT,
@@ -48,24 +58,23 @@ async def get_tracking_records(code: str = Query(openapi_examples={"normal": {
                         "controller_code": existed_record.controller_code,
                     },
                 }
-            else:
-                response = {
-                    "code": HTTPStatus.OK,
-                    "message": f"Fetched records successfully, Code: {code}.",
-                    "data": {
-                        "id": existed_record.id,
-                        "jq_sn": existed_record.jq_sn,
-                        "vendor_sn": existed_record.vendor_sn,
-                        "system_code": existed_record.system_code,
-                        "controller_code": existed_record.controller_code,
-                    },
-                }
+                d = interface.XtrackingBaseResponse(**response)
+                return Response(status_code=HTTPStatus.CONFLICT, content=d.model_dump_json())
+            response = {
+                "code": HTTPStatus.OK,
+                "message": f"Fetched records successfully, Code: {code}.",
+                "data": {
+                    "id": existed_record.id,
+                    "jq_sn": existed_record.jq_sn,
+                    "vendor_sn": existed_record.vendor_sn,
+                    "system_code": existed_record.system_code,
+                    "controller_code": existed_record.controller_code,
+                },
+            }
             d = interface.XtrackingBaseResponse(**response)
-            return Response(status_code=HTTPStatus.CONFLICT, content=d.model_dump_json())
-
+            return Response(status_code=HTTPStatus.OK, content=d.model_dump_json())
     except Exception as e:
         raise OnesphereException(detail=str(e))
-
 
 
 @router.post("/retraspects", status_code=HTTPStatus.CREATED, response_model=interface.XtrackingBaseResponse)
