@@ -1,6 +1,5 @@
 from fastapi import FastAPI, HTTPException, Query, APIRouter
 from typing import Optional
-from fastapi import APIRouter, Body, Request, Response
 import yaml
 import pyodbc
 from loguru import logger
@@ -8,7 +7,7 @@ from loguru import logger
 router = APIRouter()
 
 # Load configuration from YAML file
-with open("../config.yaml", "r") as file:
+with open("./config.yaml", "r") as file:
     config = yaml.safe_load(file)
 
 # Extract source database configuration
@@ -87,9 +86,6 @@ async def get_sn_details(code: Optional[str] = Query(None, description="The seri
 
 app.include_router(router)
 
-if __name__ == "__main__":
-    import uvicorn
-    uvicorn.run(app, host="127.0.0.1", port=8069)
 
 
 
