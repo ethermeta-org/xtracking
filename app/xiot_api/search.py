@@ -20,21 +20,21 @@ source_db_config = config.get("sync", {}).get("source", {})
 # password = 'Empower@67601510'
 # database = 'sndb'
 
-host = source_db_config.get('host')
-username = source_db_config.get('username')
-password = source_db_config.get('password')
-database = source_db_config.get('database')
-port = source_db_config.get('port')
+# host = source_db_config.get('host')
+# username = source_db_config.get('username')
+# password = source_db_config.get('password')
+# database = source_db_config.get('database')
+# port = source_db_config.get('port')
 
 
 def get_db_connection():
     """Create a database connection using pyodbc."""
     connection_string = (
         f"DRIVER={{ODBC Driver 17 for SQL Server}};"
-        f"SERVER={source_db_config.get('host', 'localhost')},{source_db_config.get('port', 1433)};"
-        f"DATABASE={source_db_config.get('database', 'sndb')};"
-        f"UID={source_db_config.get('username', 'sa')};"
-        f"PWD={source_db_config.get('password', 'YourStrong!Passw0rd')}"
+        f"SERVER={source_db_config.get('host')},{source_db_config.get('port')};"
+        f"DATABASE={source_db_config.get('database')};"
+        f"UID={source_db_config.get('username')};"
+        f"PWD={source_db_config.get('password')}"
     )
     return pyodbc.connect(connection_string)
 
@@ -89,7 +89,7 @@ app.include_router(router)
 
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run(app, host="127.0.0.1", port=8000)
+    uvicorn.run(app, host="127.0.0.1", port=8069)
 
 
 
