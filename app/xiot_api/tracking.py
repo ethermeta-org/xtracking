@@ -2,7 +2,7 @@ import json
 import re
 from http import HTTPStatus
 
-from fastapi import APIRouter, Body, Request, Response
+from fastapi import APIRouter, Body, Request, Response, Query
 from loguru import logger
 from sqlmodel import Session
 
@@ -10,9 +10,62 @@ from app import interface
 from app.exception import OnesphereException
 from app.xiot_api import schema
 from app.xiot_api.crud import crud_create_tracking_record, crud_conflict_records_existed, \
-    crud_update_existed_records_vendor_sn, crud_existed_records
+    crud_update_existed_records_vendor_sn, crud_existed_records, crud_fetch_record_via_code
 
 router = APIRouter()
+
+
+@router.get("/retraspects", status_code=HTTPStatus.OK, response_model=interface.XtrackingBaseResponse)
+async def get_tracking_records(code: str = Query(openapi_examples={"normal": {
+                "summary": "A normal example",
+                "description": "A **normal** item works correctly.",
+                "value": "1005737"
+            }
+}), request: Request = None):
+    if not code:
+        response = {
+            "code": HTTPStatus.BAD_REQUEST,
+            "message": "Fail",
+            "data": {"msg": "Code Is Empty"},
+        }
+        d = interface.XtrackingBaseResponse(**response)
+        return Response(status_code=HTTPStatus.BAD_REQUEST, content=d.model_dump_json())
+    try:
+        db = getattr(request.app.state, "db", None)  # 获取默认engine
+        if not db:
+            return Response(status_code=HTTPStatus.BAD_REQUEST, content=json.dumps({"msg": "DB not set"}))
+        with Session(db) as session:
+            existed_record, err_msg = crud_fetch_record_via_code(session, code)
+            if err_msg:
+                response = {
+                    "code": HTTPStatus.CONFLICT,
+                    "message": err_msg,
+                    "data": {
+                        "id": existed_record.id,
+                        "jq_sn": existed_record.jq_sn,
+                        "vendor_sn": existed_record.vendor_sn,
+                        "system_code": existed_record.system_code,
+                        "controller_code": existed_record.controller_code,
+                    },
+                }
+            else:
+                response = {
+                    "code": HTTPStatus.OK,
+                    "message": f"Fetched records successfully, Code: {code}.",
+                    "data": {
+                        "id": existed_record.id,
+                        "jq_sn": existed_record.jq_sn,
+                        "vendor_sn": existed_record.vendor_sn,
+                        "system_code": existed_record.system_code,
+                        "controller_code": existed_record.controller_code,
+                    },
+                }
+            d = interface.XtrackingBaseResponse(**response)
+            return Response(status_code=HTTPStatus.CONFLICT, content=d.model_dump_json())
+
+    except Exception as e:
+        raise OnesphereException(detail=str(e))
+
 
 
 @router.post("/retraspects", status_code=HTTPStatus.CREATED, response_model=interface.XtrackingBaseResponse)

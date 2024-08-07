@@ -1,8 +1,25 @@
+from typing import Tuple
+
 import sqlalchemy
 from sqlalchemy.exc import MultipleResultsFound
 from sqlmodel import Session, select, or_
 from loguru import logger
 from app.xiot_api import schema
+
+
+def crud_fetch_record_via_code(db: Session, code: str) -> Tuple[schema.Retraspects, str]:
+    statement = select(schema.Retraspects).where(or_(schema.Retraspects.jq_sn == code,
+                                                     schema.Retraspects.system_code == code,
+                                                     schema.Retraspects.controller_code == code,
+                                                     ))
+    msg = ""
+    try:
+        result = db.exec(statement).one_or_none()
+    except MultipleResultsFound as e:
+        msg = f"crud_fetch_record_via_code: {code}, {e}"
+        logger.error(msg)
+        result = db.exec(statement).first()
+    return result, msg
 
 
 def crud_create_tracking_record(db: Session, item: schema.RetraspectsCreate) -> schema.Retraspects:
