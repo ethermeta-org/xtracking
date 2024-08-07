@@ -28,7 +28,7 @@ async def cron_task_delete_hist_sync_log():
     async with async_db():
         delta = relativedelta(days=30)
         end_date = datetime.today() - delta
-        stmt = select(SyncLog.id).where(SyncLog.execute_datatime < end_date).limit(100)
+        stmt = select(SyncLog.id).where(SyncLog.execute_datatime < end_date).limit(ENV_SYNC_DELIVERY_RECORD_LIMIT)
         d = await async_db.async_execute(stmt)
         r = d.all()
         ids = [d[0] for d in r]  # 变成id的列表
@@ -46,7 +46,7 @@ async def cron_task_sync_delivery_records_mssql_to_pg():
 
     async with source_db():
         fetch_need_update_stmt = select(MSDelivery).where(MSDelivery.FLAG == 0).order_by(
-            desc(MSDelivery.FSALEDATE)).limit(ENV_SYNC_DELIVERY_RECORD_LIMIT)  # 获取100条需要更新的数据
+            desc(MSDelivery.ID)).limit(ENV_SYNC_DELIVERY_RECORD_LIMIT)  # 获取100条需要更新的数据
         d = await source_db.async_execute(fetch_need_update_stmt)
         r = d.all()
         records: List[MSDelivery] = [d[0] for d in r]  # 变成MSDelivery对象列表
