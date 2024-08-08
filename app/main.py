@@ -17,7 +17,7 @@ from app.core.site_settings import site_settings
 from app.interface import XtrackingErrorWebResponse
 from app.utils import get_database_url, create_engine, is_prod_env, check_is_dev
 from app.xiot_api import setup
-from app.xiot_api.search import router as search_router
+from app.xiot_api.sn import router as search_router
 
 
 async def http_exception(request: Request, exc: Exception):
@@ -51,7 +51,7 @@ if check_is_dev():
 setup(app, site)
 
 app.include_router(common_api_router, prefix=API_V1_STR)
-app.include_router(search_router, prefix=API_V1_STR)
+app.include_router(search_router)
 
 
 # 数据库连接

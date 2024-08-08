@@ -1,3 +1,5 @@
+import os
+
 from fastapi_amis_admin import admin
 from fastapi_amis_admin.admin import AdminSite
 from fastapi_amis_admin.amis import PageSchema
@@ -40,6 +42,26 @@ source_db = Database.create(
     }
 )
 
+search_sn_connection_url = sa.engine.URL.create(
+    "mssql+pyodbc",
+    username=app_setting.sync.source.username,
+    password=app_setting.sync.source.password,
+    host=app_setting.sync.source.host,
+    database=os.getenv('ENV_SN_DATABASE', "sndb"),
+    port=app_setting.sync.source.port,
+    query={
+        "driver": "ODBC Driver 18 for SQL Server",
+        "autocommit": "True",
+    },
+)
+
+search_sn_db = Database.create(
+    search_sn_connection_url,
+    echo=site_settings.debug,
+    connect_args={
+        "TrustServerCertificate": "yes"
+    }
+)
 
 site = AdminSite(settings=site_settings, engine=async_db)
 
@@ -66,4 +88,3 @@ class ReDocsAdmin(admin.IframeAdmin):
     @property
     def src(self):
         return f'{self.app.site.settings.site_url}/admin_redoc'
-

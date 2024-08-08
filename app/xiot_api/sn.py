@@ -1,22 +1,31 @@
-from fastapi import FastAPI, HTTPException, Query, APIRouter, Response
+from http import HTTPStatus
 from typing import Optional
+
+from fastapi import HTTPException, Query, APIRouter, Response
 from loguru import logger
 from sqlalchemy import text
 from starlette.responses import JSONResponse
-from app.core.adminsite import source_db
+from pydantic import BaseModel
+
+from app.core.adminsite import search_sn_db
 
 router = APIRouter()
 
 
-@router.get("/search_sn_details")
-async def get_sn_details(code: Optional[str] = Query(None, description="The serial number to search")):
+class Item(BaseModel):
+    default_code: str = ""
+    product_model: str = ""
+    info: str = ""
+
+
+@router.get("/search_sn_details", status_code=HTTPStatus.OK, response_model=Item)
+async def get_sn_details(code: Optional[str] = Query(default='', description="The serial number to search")):
     if not code:
-        raise HTTPException(status_code=400, detail="Bad Request: No code provided")
+        raise HTTPException(status_code=HTTPStatus.BAD_REQUEST, detail="Bad Request: No code provided")
     logger.debug(f"Start searching for serial number: {code}")
 
     # Connect to the database
-    async with source_db() as session:
-        logger.debug(f"Connected to the database")
+    async with search_sn_db() as session:
 
         search_query = text("SELECT attribute, old_code, new_code, product_model FROM sn WHERE sn = :sn")
         result = session.execute(search_query, {"sn": code})
@@ -25,57 +34,17 @@ async def get_sn_details(code: Optional[str] = Query(None, description="The seri
 
     if not record:
         logger.debug(f"No serial number found: {code}")
-        return JSONResponse(status_code=404, content={"msg": "No serial number found", "sn": code})
+        return JSONResponse(status_code=HTTPStatus.BAD_REQUEST, content={"msg": "No serial number found", "sn": code})
 
     attributes, old_code, new_code, product_model = record
     info = attributes.split(',') if attributes else []
     default_code = new_code or old_code
     product_model = product_model or ""
 
-
-    return {
+    response = {
         'default_code': default_code,
         'product_model': product_model,
         'info': info,
     }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+    d = Item(**response)
+    return Response(status_code=HTTPStatus.OK, content=d.model_dump_json())
