@@ -8,7 +8,7 @@ from sqlmodel import col
 
 from app.core.adminsite import scheduler, async_db, source_db, sink_db
 from loguru import logger
-from sqlalchemy import insert, select, update, delete, desc
+from sqlalchemy import insert, select, update, delete, desc, text
 from dateutil.relativedelta import relativedelta
 from app.xiot_api.models import SyncLog, MSDelivery, SyncLogState
 from app.config import settings
@@ -19,6 +19,7 @@ sync_interval = int(settings.sync.sync_interval)
 sync_interval = 5 if sync_interval < 5 else sync_interval  # 最低不小于5分钟
 
 ENV_SYNC_DELIVERY_RECORD_LIMIT = int(os.getenv('ENV_SYNC_DELIVERY_RECORD_LIMIT', '100'))
+ENV_RETENTION_LOG_LIMIT = int(os.getenv('ENV_RETENTION_LOG_LIMIT', '4000'))
 
 
 @scheduler.scheduled_job('interval', minutes=60)
@@ -35,6 +36,12 @@ async def cron_task_delete_hist_sync_log():
 
         del_stmt = delete(SyncLog).where(col(SyncLog.id).in_(ids))
         result = await async_db.async_execute(del_stmt)
+        r = result.rowcount
+        logger.info(f'删除历史同步日志任务完成。删除日志数量: {r}')
+
+        # 超过数量的也删除
+        stat = text("DELETE FROM sync_log WHERE id NOT IN (SELECT id FROM sync_log ORDER BY execute_datatime DESC LIMIT :limit);")
+        result = await async_db.async_execute(stat, {"limit": ENV_RETENTION_LOG_LIMIT})
         r = result.rowcount
         logger.info(f'删除历史同步日志任务完成。删除日志数量: {r}')
 
