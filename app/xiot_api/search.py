@@ -1,7 +1,8 @@
-from fastapi import FastAPI, HTTPException, Query, APIRouter
+from fastapi import FastAPI, HTTPException, Query, APIRouter, Response
 from typing import Optional
 from loguru import logger
 from sqlalchemy import text
+from starlette.responses import JSONResponse
 from app.core.adminsite import source_db
 
 router = APIRouter()
@@ -24,7 +25,7 @@ async def get_sn_details(code: Optional[str] = Query(None, description="The seri
 
     if not record:
         logger.debug(f"No serial number found: {code}")
-        raise HTTPException(status_code=404, detail="No sn found")
+        return JSONResponse(status_code=404, content={"msg": "No serial number found", "sn": code})
 
     attributes, old_code, new_code, product_model = record
     info = attributes.split(',') if attributes else []
