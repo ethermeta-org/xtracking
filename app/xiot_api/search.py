@@ -20,24 +20,22 @@ async def get_sn_details(code: Optional[str] = Query(None, description="The seri
         search_query = text("SELECT attribute, old_code, new_code, product_model FROM sn WHERE sn = :sn")
         result = session.execute(search_query, {"sn": code})
         logger.debug(f"Executed SQL query: {search_query}")
-        tup_data = result.fetchall()
+        record = result.fetchone()
 
-    if not tup_data:
+    if not record:
         logger.debug(f"No serial number found: {code}")
         raise HTTPException(status_code=404, detail="No sn found")
 
-    lis_data = tup_data[0]
-    data = lis_data[0] if lis_data[0] else ''
-    data = data.split(',')
-
-    default_code = lis_data[2] if lis_data[2] else lis_data[1]
-    product_model = lis_data[3] if lis_data[3] else ""
+    attributes, old_code, new_code, product_model = record
+    info = attributes.split(',') if attributes else []
+    default_code = new_code or old_code
+    product_model = product_model or ""
 
 
     return {
         'default_code': default_code,
         'product_model': product_model,
-        'info': data,
+        'info': info,
     }
 
 
