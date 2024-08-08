@@ -29,13 +29,13 @@ async def get_tracking_records(code: str = Query(openapi_examples={"normal": {
             "data": {"msg": "Code Is Empty"},
         }
         d = interface.XtrackingBaseResponse(**response)
-        return Response(status_code=HTTPStatus.BAD_REQUEST, content=d.model_dump_json())
+        return Response(status_code=HTTPStatus.BAD_REQUEST, content=d.model_dump_json(exclude_none=True))
     try:
         db = getattr(request.app.state, "db", None)  # 获取默认engine
         if not db:
             return Response(status_code=HTTPStatus.BAD_REQUEST, content=json.dumps({"msg": "DB not set"}))
         with Session(db) as session:
-            existed_record, err_msg = crud_fetch_record_via_code(session, code)
+            existed_record, err_msg, ids = crud_fetch_record_via_code(session, code)
             if not existed_record:
                 msg = f"未找到相应的记录: {code}"
                 response = {
@@ -45,7 +45,8 @@ async def get_tracking_records(code: str = Query(openapi_examples={"normal": {
                         "msg": msg
                     },
                 }
-                return Response(status_code=HTTPStatus.BAD_REQUEST, content=json.dumps(response))
+                d = interface.XtrackingBaseResponse(**response)
+                return Response(status_code=HTTPStatus.BAD_REQUEST, content=d.model_dump_json(exclude_none=True))
             if err_msg:
                 response = {
                     "code": HTTPStatus.CONFLICT,
@@ -57,9 +58,12 @@ async def get_tracking_records(code: str = Query(openapi_examples={"normal": {
                         "system_code": existed_record.system_code,
                         "controller_code": existed_record.controller_code,
                     },
+                    "extra": {
+                        "ids": ids
+                    }
                 }
                 d = interface.XtrackingBaseResponse(**response)
-                return Response(status_code=HTTPStatus.CONFLICT, content=d.model_dump_json())
+                return Response(status_code=HTTPStatus.CONFLICT, content=d.model_dump_json(exclude_none=True))
             response = {
                 "code": HTTPStatus.OK,
                 "message": f"Fetched records successfully, Code: {code}.",
@@ -72,7 +76,7 @@ async def get_tracking_records(code: str = Query(openapi_examples={"normal": {
                 },
             }
             d = interface.XtrackingBaseResponse(**response)
-            return Response(status_code=HTTPStatus.OK, content=d.model_dump_json())
+            return Response(status_code=HTTPStatus.OK, content=d.model_dump_json(exclude_none=True))
     except Exception as e:
         raise OnesphereException(detail=str(e))
 
@@ -112,7 +116,7 @@ async def create_retraspects(item: schema.RetraspectsCreate = Body(
             "data": {"msg": "JQ SN must be 7 digits."},
         }
         d = interface.XtrackingBaseResponse(**response)
-        return Response(status_code=HTTPStatus.BAD_REQUEST, content=d.model_dump_json())
+        return Response(status_code=HTTPStatus.BAD_REQUEST, content=d.model_dump_json(exclude_none=True))
 
     if not re.match(r"^(JQ\d{9}|K\d{11})$", item.vendor_sn):
         response = {
@@ -123,7 +127,7 @@ async def create_retraspects(item: schema.RetraspectsCreate = Body(
             },
         }
         d = interface.XtrackingBaseResponse(**response)
-        return Response(status_code=HTTPStatus.BAD_REQUEST, content=d.model_dump_json())
+        return Response(status_code=HTTPStatus.BAD_REQUEST, content=d.model_dump_json(exclude_none=True))
 
     try:
         db = getattr(request.app.state, "db", None)   # 获取默认engine
@@ -147,7 +151,7 @@ async def create_retraspects(item: schema.RetraspectsCreate = Body(
                     },
                 }
                 d = interface.XtrackingBaseResponse(**response)
-                return Response(status_code=HTTPStatus.OK, content=d.model_dump_json())
+                return Response(status_code=HTTPStatus.OK, content=d.model_dump_json(exclude_none=True))
 
             # 两码或者一码重复的情况存在
             conflict_record = crud_conflict_records_existed(session, item)
@@ -166,7 +170,7 @@ async def create_retraspects(item: schema.RetraspectsCreate = Body(
                     },
                 }
                 d = interface.XtrackingBaseResponse(**response)
-                return Response(status_code=HTTPStatus.CONFLICT, content=d.model_dump_json())
+                return Response(status_code=HTTPStatus.CONFLICT, content=d.model_dump_json(exclude_none=True))
 
             # 正常创建记录
             record = crud_create_tracking_record(session, item)

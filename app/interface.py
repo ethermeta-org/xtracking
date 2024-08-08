@@ -8,6 +8,7 @@ class XtrackingBaseResponse(BaseModel):
     code: int = HTTPStatus.CREATED
     message: str = "Create a Record Success"
     data: Any | None = None
+    extra: Any | None = None
 
 
 class XtrackingErrorWebResponse(XtrackingBaseResponse):
