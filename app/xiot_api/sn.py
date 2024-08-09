@@ -1,5 +1,5 @@
 from http import HTTPStatus
-from typing import Optional
+from typing import Optional, List, Any
 
 from fastapi import HTTPException, Query, APIRouter, Response
 from loguru import logger
@@ -15,7 +15,7 @@ router = APIRouter()
 class Item(BaseModel):
     default_code: str = ""
     product_model: str = ""
-    info: str = ""
+    info: List[Any] = ""
 
 
 @router.get("/search_sn_details", status_code=HTTPStatus.OK, response_model=Item)
@@ -26,7 +26,6 @@ async def get_sn_details(code: Optional[str] = Query(default='', description="Th
 
     # Connect to the database
     async with search_sn_db() as session:
-
         search_query = text("SELECT attribute, old_code, new_code, product_model FROM sn WHERE sn = :sn")
         result = session.execute(search_query, {"sn": code})
         logger.debug(f"Executed SQL query: {search_query}")
@@ -34,16 +33,19 @@ async def get_sn_details(code: Optional[str] = Query(default='', description="Th
 
     if not record:
         logger.debug(f"No serial number found: {code}")
-        return JSONResponse(status_code=HTTPStatus.BAD_REQUEST, content={"msg": "No serial number found", "sn": code})
+        return JSONResponse(status_code=HTTPStatus.BAD_REQUEST, content={"result": "No serial number found",
+                                                                         "errcode": HTTPStatus.NOT_FOUND})
 
     attributes, old_code, new_code, product_model = record
+    if not old_code:
+        old_code = ""
     info = attributes.split(',') if attributes else []
-    default_code = new_code or old_code
+    default_code: str = new_code or old_code
     product_model = product_model or ""
 
     response = {
-        'default_code': default_code,
-        'product_model': product_model,
+        'default_code': default_code.rstrip(),
+        'product_model': product_model.rstrip(),
         'info': info,
     }
     d = Item(**response)
