@@ -9,3 +9,4 @@ class LogsAdmin(admin.ModelAdmin):
     router_prefix = '/logs'
     model = SyncLog
     search_fields = [SyncLog.sn, SyncLog.description]
+    # ordering = [SyncLog.execute_datatime.desc()]
