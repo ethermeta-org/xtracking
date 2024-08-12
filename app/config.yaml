@@ -18,12 +18,12 @@ database:
   name: test # 数据库名称
 
 sync:
-#  source_dsn: "postgresql://odoo:odoo@localhost/test"
-  source:
+
+  source: #source是在生产环境中一个只读的sqlserver，来源是金蝶的数据
     host: 10.1.10.3
     port: 1433
     database: sndb
     username: sn
     password: Empower@67601510
-  sink_dsn: "postgresql://odoo:odoo@localhost/test"
+  sink_dsn: "postgresql://odoo:odoo@localhost/test" #sink是xiot PG数据库
   sync_interval: 5 # 单位分钟
