@@ -118,12 +118,12 @@ async def create_retraspects(item: schema.RetraspectsCreate = Body(
         d = interface.XtrackingBaseResponse(**response)
         return Response(status_code=HTTPStatus.BAD_REQUEST, content=d.model_dump_json(exclude_none=True))
 
-    if not re.match(r"^(JQ\d{9}|K\d{11}|\d{13})$", item.vendor_sn):
+    if not re.match(r"^(JQ\d{9}|K\d{11}|\d{13}|W\d{9})$", item.vendor_sn):
         response = {
             "code": HTTPStatus.BAD_REQUEST,
             "message": "Fail",
             "data": {
-                "msg": "Vendor SN must start with 'JQ' followed by 9 digits or 'K' followed by 11 digits or 13 digits."
+                "msg": "Vendor SN must start with 'JQ' or 'W' followed by 9 digits or 'K' followed by 11 digits or 13 digits."
             },
         }
         d = interface.XtrackingBaseResponse(**response)
